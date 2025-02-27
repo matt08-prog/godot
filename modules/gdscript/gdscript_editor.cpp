@@ -2849,6 +2849,28 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 								r_result.insert(option.display, option);
 							}
 						}
+					} else if (p_method == "is_in_group") {
+						if (p_context.base != nullptr) {
+							Variant base_1 = p_context.base;
+							Object *obj = base_1.operator Object *();
+							if (obj) {
+								List<String> options;
+								obj->get_argument_options(p_method, p_argidx, &options);
+								for (String &opt : options) {
+									// Handle user preference.
+									if (opt.is_quoted()) {
+										opt = opt.unquote().quote(quote_style);
+										if (use_string_names && info.arguments.get(p_argidx).type == Variant::STRING_NAME) {
+											opt = "&" + opt;
+										} else if (use_node_paths && info.arguments.get(p_argidx).type == Variant::NODE_PATH) {
+											opt = "^" + opt;
+										}
+									}
+									ScriptLanguage::CodeCompletionOption option(opt, ScriptLanguage::CODE_COMPLETION_KIND_FUNCTION);
+									r_result.insert(option.display, option);
+								}
+							}
+						}
 					}
 
 					if (p_argidx < method_args) {
